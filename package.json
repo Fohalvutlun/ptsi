@@ -1,0 +1,16 @@
+{
+  "name": "ptsi-cyberbullying",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main/main.js",
+  "scripts": {
+    "test": "node ./test/test.js"
+  },
+  "author": "PTSI-503",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "mssql": "^6.3.1",
+    "tedious": "^6.7.0"
+  }
+}
