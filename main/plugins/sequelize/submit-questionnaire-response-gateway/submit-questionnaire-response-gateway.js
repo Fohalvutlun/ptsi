@@ -1,96 +1,116 @@
-import sql from 'mssql';
-
-export default function buildMakeSubmitQuestionnaireResponseGateway({
-    configs,
+export default function makeSubmitQuestionnaireResponseGateway({
+    Time,
+    SchoolGrouping,
+    RespondentProfile,
+    QuestionnaireResponse,
+    Questionnaire
 }) {
-
-    const connection = getConnection();
 
     const gateway = {
         insert,
         getQuestionnaireWithCodeEqualTo,
         getSchoolGroupingWithCodeEqualTo
     }
-    return function makeSubmitQuestionnaireResponseGateway() {
-        return Object.freeze(gateway);
-    };
+    return Object.freeze(gateway);
 
-    function insert(gatewayRequestModel) {
-        const momentOfSubmission = gatewayRequestModel.momentOfSubmission
+    async function insert({ respondent, momentOfSubmission, questionnaireResponses }) {
+        const
+            schoolGroupingModel = await SchoolGrouping.findOne({ where: { schoolGroupingCode: respondent.schoolGrouping.code } }),
+            respodentProfileModel = await makeRespodentProfileModel(respondent.age, respondent.gender),
+            timeModel = await makeTimeModel(momentOfSubmission);
+
+        await saveQuestionnaireResponses(
+            questionnaireResponses,
+            respodentProfileModel.profileId,
+            schoolGroupingModel.schoolGroupingId,
+            timeModel.timeId
+        );
+
+        return { respondent, momentOfSubmission, questionnaireResponses };
     }
 
-    function getQuestionnaireWithCodeEqualTo(questionnaireCode) {
-        const
-            attrNames = getQuesstionnaireTableStructure().attr,
-            tableName = getQuesstionnaireTableStructure().tableName,
-            queryString = 'SELECT TOP 1'
-                + ` ${attrNames.id}, ${attrNames.code}, ${attrNames.designation}`
-                + ` FROM ${tableName} WHERE ${attrNames.code} = '${questionnaireCode}'`;
+    async function getQuestionnaireWithCodeEqualTo(code) {
+        const questionnaireModel = await Questionnaire.findOne({ where: { questionnaireCode: code } });
+        return makeQuestionnaireData(questionnaireModel);
 
-        const records = await queryAtLeastOneRecord(queryString, () => {
-            throw new Error('No Questionnaire was found for the provided code');
+    }
+
+    async function getSchoolGroupingWithCodeEqualTo(code) {
+        const schoolGroupingModel = await SchoolGrouping.findOne({ where: { schoolGroupingCode: code } });
+        return makeSchoolGroupingData(schoolGroupingModel);
+    }
+
+    async function makeTimeModel(momentOfSubmission) {
+        const [timeModel, _] = await Time.findCreateFind({
+            where: {
+                day: momentOfSubmission.getDate(),
+                month: momentOfSubmission.getMonth() + 1, //Javascript month starts at 0
+                year: momentOfSubmission.getFullYear()
+            }
         });
 
-        return {
-            code: records[0][attrNames.code],
-            designation: records[0][attrNames.designation]
-        };
+        return timeModel;
     }
 
-    function getSchoolGroupingWithCodeEqualTo(schoolGroupingCode) {
-        const
-            attrNames = getSchoolGroupingTableStructure().attrs,
-            tableName = getSchoolGroupingTableStructure().tableName,
-            queryString = 'SELECT TOP 1'
-                + ` ${attrNames.id}, ${attrNames.code}, ${attrNames.designation}`
-                + ` FROM ${tableName} WHERE ${attrNames.code} = '${schoolGroupingCode}';`;
-
-        const records = await queryAtLeastOneRecord(queryString, () => {
-            throw new Error('No School Grouping was found for the provided code');
+    async function makeRespodentProfileModel(age, gender) {
+        const [respodentProfileModel, _] = await RespondentProfile.findCreateFind({
+            where: { age, gender }
         });
 
-        return {
-            code: records[0][attrNames.code],
-            name: records[0][attrNames.name],
-            emailContact: records[0][attrNames.emailContact],
-            phoneContact: records[0][attrNames.phoneContact]
-        };
+        return respodentProfileModel;
     }
 
-    async function queryAtLeastOneRecord(sqlString, errorHandler) {
-        const queryResult = await sql.connect(configs).request()
-            .query(sqlString);
+    async function saveQuestionnaireResponses(questionnaireResponses, respondentProfileId, schoolGroupingId, timeId) {
+        for (let questionnaireResponse of questionnaireResponses) {
+            const questionnaire = await Questionnaire.findOne({ where: { questionnaireCode: questionnaireResponse.questionnaire.code } });
 
-        if (queryResult.recordset.length == 0) {
-            errorHandler();
+            await saveOneQuestionnaireResponse(
+                questionnaireResponse,
+                respondentProfileId,
+                schoolGroupingId,
+                timeId,
+                questionnaire.questionnaireId
+            );
+        }
+    }
+
+    async function saveOneQuestionnaireResponse(questionnaireResponse, respondentProfileId, schoolGroupingId, timeId, questionnaireId) {
+        return await QuestionnaireResponse.create({
+            questionNo1: questionnaireResponse.answers.get(1),
+            questionNo2: questionnaireResponse.answers.get(2),
+            questionNo3: questionnaireResponse.answers.get(3),
+            questionNo4: questionnaireResponse.answers.get(4),
+            questionNo5: questionnaireResponse.answers.get(5),
+            questionNo6: questionnaireResponse.answers.get(6),
+            risk: questionnaireResponse.riskProfile.level,
+            timeId,
+            schoolGroupingId,
+            respondentProfileId,
+            questionnaireId
+        });
+    }
+
+    function makeQuestionnaireData(questionnaireModel) {
+        if (!questionnaireModel) {
+            return null;
         }
 
-        return queryResult.recordset;
-    }
-
-    function getQuesstionnaireTableStructure() {
         return {
-            tableName: 'Questionario',
-            attrs: {
-                id = 'id_questionario',
-                code = 'codigo_questionario',
-                designation = 'descricao'
-            }
+            code: Number.parseInt(questionnaireModel.questionnaireCode),
+            designation: questionnaireModel.designation
         };
     }
 
-    function getSchoolGroupingTableStructure() {
+    function makeSchoolGroupingData(schoolGroupingModel) {
+        if (!schoolGroupingModel) {
+            return null;
+        }
+
         return {
-            tableName: 'Dados_Agrupamento',
-            attrs: {
-                id: 'id_dados_agrupamento',
-                code: 'codigo_agrupamento',
-                name: 'nome',
-                emailContact: 'email',
-                phoneContact: 'contacto'
-            }
-        };
+            code: schoolGroupingModel.schoolGroupingCode,
+            name: schoolGroupingModel.name,
+            emailContact: schoolGroupingModel.email,
+            phoneContact: schoolGroupingModel.phoneNumber
+        }
     }
-
-
 };

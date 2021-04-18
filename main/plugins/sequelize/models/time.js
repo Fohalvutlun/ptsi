@@ -1,10 +1,10 @@
-export default function makeTimeModel(sequelize, DataTypes) {
+export default function makeTimeModel(sequelize,DataTypes) {
 
     const timeAttributes = {
         timeId: {
             field: 'id_tempo',
             type: DataTypes.INTEGER,
-            allowNull: false,
+            autoIncrement:true,
             primaryKey: true
         },
         day: {
@@ -24,7 +24,13 @@ export default function makeTimeModel(sequelize, DataTypes) {
         }
     };
 
-    return sequelize.define('Time', timeAttributes, {
-        tableName: 'Tempo'
+    const timeModel = sequelize.define('Time', timeAttributes, {
+        tableName: 'Tempo',
+        timestamps: false,
+        createdAt: false,
+        updatedAt: false,
+        deletedAt: false
     });
+
+    return timeModel;
 }

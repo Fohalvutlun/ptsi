@@ -40,23 +40,26 @@ export default function makeGatewayRequestBuilder() {
         return builderBehaviour;
     }
 
+    function makeGatewayRequest() {
+        return Object.assign({}, requestData);
+    }
+
     function getQuestionnaireResponseData(questionnaireResponseEntity) {
 
-        const answers = getListOfDataOfAnswers(questionnaireResponseEntity.getAnswers());
+        const answers = getMapOfAnswers(questionnaireResponseEntity.getAnswers());
 
         return {
             questionnaire: {
                 code: questionnaireResponseEntity.getQuestionnaire().getCode(),
                 designation: questionnaireResponseEntity.getQuestionnaire().getDesignation()
             },
-            answers
+            answers,
+            riskProfile: {
+                level: questionnaireResponseEntity.getRiskProfile().getLevel(),
+                designation: questionnaireResponseEntity.getRiskProfile().getDesignation()
+            }
         };
     }
-
-    function makeGatewayRequest() {
-        return Object.assign({}, requestData);
-    }
-
 
     function getSchoolGroupingData(schoolGroupingEntity) {
         return {
@@ -67,14 +70,12 @@ export default function makeGatewayRequestBuilder() {
         }
     }
 
-    function getListOfDataOfAnswers(answersMap) {
-        return Array.from(answersMap.values(), (answerEntity) => {
-            return {
-                choice: answerEntity.getChoice(),
-                question: {
-                    identifier: answerEntity.getQuestion().getIdentifier()
-                }
-            };
+    function getMapOfAnswers(answersMap) {
+        const newAnswersMap = new Map();
+        answersMap.forEach((answer, questionIdentifer) => {
+            newAnswersMap.set(questionIdentifer, answer.getChoice());
         });
+
+        return newAnswersMap;
     }
 }

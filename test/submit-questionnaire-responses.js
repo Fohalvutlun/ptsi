@@ -1,5 +1,6 @@
-import buildSubmitQuestionnaireResponses from '../main/core/submit-questionnaire-responses/submit-questionnaire-responses.js';
+import makeSubmitQuestionnaireResponses from '../main/core/submit-questionnaire-responses/submit-questionnaire-responses.js';
 import makeSubmissionRequestBuilder from '../main/core/submit-questionnaire-responses/models/submission-request-model.js';
+import makeSubmissionRequestValidator from '../main/core/submit-questionnaire-responses/submission-request-model-validator.js'
 
 import { strict as assert } from 'assert';
 
@@ -13,7 +14,8 @@ const dummyGrouping = {
 // Stubs
 const
     outputPortStub = {
-        receive: (o) => o
+        prepareSuccessView: (o) => o,
+        prepareFailView: (o) => o
     },
     gatewayStub = {
         insert: (o) => {
@@ -35,6 +37,12 @@ const
         }
     };
 
+const submitQuestionnaireResponses = makeSubmitQuestionnaireResponses({
+    submitQuestionnaireResponseOutputPort: outputPortStub,
+    submitQuestionnaireResponseGateway: gatewayStub,
+    submissionRequestValidator: makeSubmissionRequestValidator()
+});
+
 function makeMockRequestModelWithAnswerCombo(q1a1, q1a4, q2a1, q2a4) {
     return makeSubmissionRequestBuilder()
         .setRespondent(8, "f", "ESAS")
@@ -45,31 +53,25 @@ function makeMockRequestModelWithAnswerCombo(q1a1, q1a4, q2a1, q2a4) {
         .makeSubmissionRequest();
 }
 
+async function testAnswerCombo(q1a1, q1a4, q2a1, q2a4, expected) {
+    const dummy = makeMockRequestModelWithAnswerCombo(q1a1, q1a4, q2a1, q2a4);
+    const response = await submitQuestionnaireResponses.submit(dummy);
+    assert.deepStrictEqual(response, expected);
+}
 
-const submitQuestionnaireResponses = buildSubmitQuestionnaireResponses({
-    submitQuestionnaireResponseOutputPort: outputPortStub,
-    submitQuestionnaireResponseGateway: gatewayStub
-});
-
-
-function testSubmitQuestionnaireResponse_For_Level1RiskProfile() {
-
-    function testAnswerCombo(q1a1, q1a4, q2a1, q2a4) {
-        const dummy = makeMockRequestModelWithAnswerCombo(q1a1, q1a4, q2a1, q2a4);
-        const response = submitQuestionnaireResponses.submit(dummy);
-        assert.deepStrictEqual(response, {
-            riskProfile: {
-                level: 1,
-                designation: "Verde"
-            }, schoolGrouping: dummyGrouping
-        });
-    }
+async function testSubmitQuestionnaireResponse_For_Level1RiskProfile() {
+    const expected = {
+        riskProfile: {
+            level: 1,
+            designation: "Verde"
+        }, schoolGrouping: dummyGrouping
+    };
 
     for (let q1a1 = 1; q1a1 <= 2; q1a1++) {
         for (let q1a4 = 1; q1a4 <= 2; q1a4++) {
             for (let q2a1 = 1; q2a1 <= 2; q2a1++) {
                 for (let q2a4 = 1; q2a4 <= 2; q2a4++) {
-                    testAnswerCombo(q1a1, q1a4, q2a1, q2a4);
+                    await testAnswerCombo(q1a1, q1a4, q2a1, q2a4, expected);
                     test_counter++;
                 }
             }
@@ -77,45 +79,38 @@ function testSubmitQuestionnaireResponse_For_Level1RiskProfile() {
     }
 }
 
-function testSubmitQuestionnaireResponse_For_Level2RiskProfile() {
+async function testSubmitQuestionnaireResponse_For_Level2RiskProfile() {
+    const expected = {
+        riskProfile: {
+            level: 2,
+            designation: "Amarelo"
+        }, schoolGrouping: dummyGrouping
+    };
 
-    function testAnswerCombo(q1a1, q1a4, q2a1, q2a4) {
-        const dummy = makeMockRequestModelWithAnswerCombo(q1a1, q1a4, q2a1, q2a4);
-        const response = submitQuestionnaireResponses.submit(dummy);
-        assert.deepStrictEqual(response, {
-            riskProfile: {
-                level: 2,
-                designation: "Amarelo"
-            }, schoolGrouping: dummyGrouping
-        });
-    }
-    testAnswerCombo(1, 1, 3, 1);
-    testAnswerCombo(1, 1, 3, 2);
+    await testAnswerCombo(1, 1, 3, 1, expected);
+    await testAnswerCombo(1, 1, 3, 2, expected);
 
-    testAnswerCombo(3, 1, 3, 1);
-    testAnswerCombo(3, 1, 3, 2);
+    await testAnswerCombo(3, 1, 3, 1, expected);
+    await testAnswerCombo(3, 1, 3, 2, expected);
 
-    testAnswerCombo(3, 2, 3, 1);
-    testAnswerCombo(3, 2, 3, 2);
+    await testAnswerCombo(3, 2, 3, 1, expected);
+    await testAnswerCombo(3, 2, 3, 2, expected);
 
     test_counter += 6;
 }
 
-function testSubmitQuestionnaireResponse_For_Level3RiskProfile() {
+async function testSubmitQuestionnaireResponse_For_Level3RiskProfile() {
 
-    function testAnswerCombo(q1a1, q1a4, q2a1, q2a4) {
-        const dummy = makeMockRequestModelWithAnswerCombo(q1a1, q1a4, q2a1, q2a4);
-        const response = submitQuestionnaireResponses.submit(dummy);
-        assert.deepStrictEqual(response, {
-            riskProfile: {
-                level: 3,
-                designation: "Vermelho"
-            }, schoolGrouping: dummyGrouping
-        });
-    }
-    testAnswerCombo(1, 1, 3, 3);
-    testAnswerCombo(3, 3, 1, 1);
-    testAnswerCombo(3, 3, 3, 3);
+    const expected = {
+        riskProfile: {
+            level: 3,
+            designation: "Vermelho"
+        }, schoolGrouping: dummyGrouping
+    };
+
+    await testAnswerCombo(1, 1, 3, 3, expected);
+    await testAnswerCombo(3, 3, 1, 1, expected);
+    await testAnswerCombo(3, 3, 3, 3, expected);
 
     test_counter += 3;
 }
@@ -124,9 +119,9 @@ function testSubmitQuestionnaireResponse_For_Level3RiskProfile() {
 let test_counter = 0;
 const begin = Date.now();
 
-testSubmitQuestionnaireResponse_For_Level1RiskProfile();
-testSubmitQuestionnaireResponse_For_Level2RiskProfile();
-testSubmitQuestionnaireResponse_For_Level3RiskProfile();
+await testSubmitQuestionnaireResponse_For_Level1RiskProfile();
+await testSubmitQuestionnaireResponse_For_Level2RiskProfile();
+await testSubmitQuestionnaireResponse_For_Level3RiskProfile();
 
 const elapsed = Date.now() - begin;
 console.log("[TEST] " + test_counter + " tests done in " + elapsed + " ms")

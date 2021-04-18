@@ -4,7 +4,7 @@ export default function makeQuestionnaireModel(sequelize, DataTypes) {
         questionnaireId: {
             field: 'id_questionario',
             type: DataTypes.INTEGER,
-            allowNull: false,
+            autoIncrement:true,
             primaryKey: true
         },
         designation: {
@@ -20,9 +20,13 @@ export default function makeQuestionnaireModel(sequelize, DataTypes) {
         }
     };
 
-    return sequelize.define('Questionnaire', questionnaireAttributes, {
-        tableName: 'Questionario'
+    const questionnaireModel = sequelize.define('Questionnaire', questionnaireAttributes, {
+        tableName: 'Questionario',
+        timestamps: false,
+        createdAt: false,
+        updatedAt: false,
+        deletedAt: false
     });
 
-    
+    return questionnaireModel;
 }

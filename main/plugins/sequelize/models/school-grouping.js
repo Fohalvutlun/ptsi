@@ -4,8 +4,13 @@ export default function makeSchoolGroupingModel(sequelize, DataTypes) {
         schoolGroupingId: {
             field: 'id_dados_agrupamento',
             type: DataTypes.INTEGER,
-            allowNull: false,
+            autoIncrement:true,
             primaryKey: true
+        },
+        name:{
+            field: 'nome',
+            type: DataTypes.STRING(200),
+            allowNull: false
         },
         phoneNumber: {
             field: 'contacto',
@@ -13,7 +18,7 @@ export default function makeSchoolGroupingModel(sequelize, DataTypes) {
             allowNull: false
         },
         email: {
-            field: 'sexo',
+            field: 'email',
             type: DataTypes.STRING(45),
             allowNull: false
         },
@@ -25,9 +30,13 @@ export default function makeSchoolGroupingModel(sequelize, DataTypes) {
         }
     };
 
-    return sequelize.define('SchoolGrouping', schoolGroupingAttributes, {
-        tableName: 'Dados_Agrupamento'
+    const schoolGrouping = sequelize.define('SchoolGrouping', schoolGroupingAttributes, {
+        tableName: 'Dados_Agrupamento',
+        timestamps: false,
+        createdAt: false,
+        updatedAt: false,
+        deletedAt: false
     });
 
-
+    return schoolGrouping;
 }

@@ -4,7 +4,7 @@ export default function makeRespondentProfileModel(sequelize, DataTypes) {
         profileId: {
             field: 'id_dados_sociodemograficos',
             type: DataTypes.INTEGER,
-            allowNull: false,
+            autoIncrement:true,
             primaryKey: true
         },
         age: {
@@ -19,9 +19,13 @@ export default function makeRespondentProfileModel(sequelize, DataTypes) {
         }
     };
 
-    return sequelize.define('RespondentProfile', respondentProfileAttributes, {
-        tableName: 'Dados_Sociodemograficos'
+    const respondentProfile = sequelize.define('RespondentProfile', respondentProfileAttributes, {
+        tableName: 'Dados_Sociodemograficos',
+        timestamps: false,
+        createdAt: false,
+        updatedAt: false,
+        deletedAt: false
     });
 
-
+    return respondentProfile;
 }
