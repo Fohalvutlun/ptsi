@@ -3,8 +3,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node -r dotenv/config ./test/index.js dotenv_config_path=./test/.env",
-    "start": "node -r dotenv/config ./main/main.js dotenv_config_path=./main/.env"
+    "test": "cd test && node -r dotenv/config index.js",
+    "start": "cd main && node -r dotenv/config main.js"
   },
   "author": "PTSI-503",
   "license": "ISC",
