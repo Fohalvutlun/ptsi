@@ -1,6 +1,5 @@
 import makeSubmitQuestionnaireResponses from '../main/core/submit-questionnaire-responses/submit-questionnaire-responses.js';
 import makeSubmissionRequestBuilder from '../main/core/submit-questionnaire-responses/models/submission-request-model.js';
-import makeSubmissionRequestValidator from '../main/core/submit-questionnaire-responses/submission-request-model-validator.js'
 
 import { strict as assert } from 'assert';
 
@@ -35,12 +34,15 @@ const
                 phoneContact: dummyGrouping.phoneContact
             }
         }
+    },
+    validatorStub = {
+        isValid: (o) => true
     };
 
 const submitQuestionnaireResponses = makeSubmitQuestionnaireResponses({
     submitQuestionnaireResponseOutputPort: outputPortStub,
     submitQuestionnaireResponseGateway: gatewayStub,
-    submissionRequestValidator: makeSubmissionRequestValidator()
+    submissionRequestValidator: validatorStub
 });
 
 function makeMockRequestModelWithAnswerCombo(q1a1, q1a4, q2a1, q2a4) {
@@ -124,4 +126,4 @@ await testSubmitQuestionnaireResponse_For_Level2RiskProfile();
 await testSubmitQuestionnaireResponse_For_Level3RiskProfile();
 
 const elapsed = Date.now() - begin;
-console.log("[TEST] " + test_counter + " tests done in " + elapsed + " ms")
+console.log("[TEST] " + test_counter + " tests done in " + elapsed + " ms");

@@ -1,15 +1,15 @@
 {
   "name": "ptsi-cyberbullying",
-  "version": "1.0.0",
   "description": "",
-  "main": "idenx.js",
+  "main": "index.js",
   "scripts": {
-    "test": "node -r dotenv/config ./test/test.js dotenv_config_path=./test/.env",
+    "test": "node -r dotenv/config ./test/index.js dotenv_config_path=./test/.env",
     "start": "node -r dotenv/config ./main/main.js dotenv_config_path=./main/.env"
   },
   "author": "PTSI-503",
   "license": "ISC",
   "type": "module",
+  "private": "true",
   "dependencies": {
     "ajv": "^8.1.0",
     "body-parser": "^1.19.0",
@@ -17,14 +17,13 @@
     "express": "^4.17.1",
     "express-sanitizer": "^1.0.5",
     "helmet": "^4.4.1",
-    "mssql": "^6.3.1",
     "node-cache": "^5.1.2",
     "roman-numerals": "^0.3.2",
     "sequelize": "^6.6.2",
     "sqlite3": "^5.0.2",
     "tedious": "^6.7.0"
   },
-  "engines":{
-    "node": "^15.14.0"
+  "engines": {
+    "node": ">=14.x"
   }
 }
