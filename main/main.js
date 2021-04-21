@@ -1,20 +1,22 @@
+import http from 'http';
 import fs from 'fs';
 import makeAES256gcm from '../main/utilities/aes-256-gcm.js';
 
 import Sequelize from 'sequelize';
 import makeSequelizeModels from './plugins/sequelize/models/index.js';
 
-import Express from 'express';
-import makeExpressCallback from './plugins/express-web-api/express-callback/express-callback.js';
-import makeExpressServer from './plugins/express-web-api/express-server/express-server.js';
-
 import NodeCache from 'node-cache';
 import makeNodeCacheModels from './plugins/node-cache/cache/index.js';
+
+import Express from 'express';
+import sanitizer from 'express-sanitizer';
+import helmet from 'helmet';
+import cors from 'cors';
+import makeExpressCallback from './plugins/express-web-api/express-callback/express-callback.js';
 
 // Gateways
 import makeSubmitQuestionnaireResponseGateway from './plugins/sequelize/submit-questionnaire-response-gateway/submit-questionnaire-response-gateway.js';
 import makeSubmissionRequestModelValidatorGateway from './plugins/node-cache/submit-questionnaire-response-gateway/submission-request-model-validator-gateway.js';
-
 // Controllers
 import makeSubmitQuestionnaireAnswersWebAPIController from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-controller.js';
 // Presenters
@@ -28,15 +30,16 @@ import makeSubmissionRequestValidator from './core/submit-questionnaire-response
 const ApplicationProperties = Object.assign({}, process.env);
 const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(ApplicationProperties.INITIAL_DATA_KEY));
 
-
 (async function main() {
 
     const sequelizeModels = await setupSequelizeModels();
     const nodeCacheModels = await setupNodeCache();
 
-    const router = Express.Router();
-    router.get('/status', (req, res) => { res.send('ON') });
-    router.post('/questionnaire/response/submit',
+    const app = mountMiddlewares(Express());
+    app.set('trust proxy', 1);
+
+    app.get('/status', (req, res) => { res.send('ON') });
+    app.post('/questionnaire/response/submit',
         makeExpressCallback(
             makeSubmitQuestionnaireAnswersWebAPIController({
                 submitQuestionnaireRespondeInputPort: makeSubmitQuestionnaireResponse({
@@ -47,13 +50,29 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
                     })
                 })
             })));
-    const app = makeExpressServer({ port: Number.parseInt(ApplicationProperties.WEB_PORT) }, router);
+
+    var server = http.createServer(app);
+    server.on('error', (err) => console.error(err));
+    server.on('listening', () => console.log('Server turned on %s, listening on port %d', new Date().toString(), server.address().port));
+    server.listen(ApplicationProperties.WEB_PORT);
+    
 })();
 
 
 /* 
     Helper Functions 
 */
+
+// Express
+function mountMiddlewares(app) {
+    app.use(cors({ origin: true, credentials: true }));
+    app.use(helmet());
+    app.use(Express.json());
+    app.use(Express.urlencoded({ extended: true }));
+    app.use(sanitizer());
+
+    return app;
+}
 
 // Initial Data
 function makeGetSchoolGroupingDataRows({
