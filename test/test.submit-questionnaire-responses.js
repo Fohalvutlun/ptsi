@@ -62,6 +62,7 @@ async function testAnswerCombo(q1a1, q1a4, q2a1, q2a4, expected) {
 }
 
 async function testSubmitQuestionnaireResponse_For_Level1RiskProfile() {
+
     const expected = {
         riskProfile: {
             level: 1,
@@ -69,16 +70,11 @@ async function testSubmitQuestionnaireResponse_For_Level1RiskProfile() {
         }, schoolGrouping: dummyGrouping
     };
 
-    for (let q1a1 = 1; q1a1 <= 2; q1a1++) {
-        for (let q1a4 = 1; q1a4 <= 2; q1a4++) {
-            for (let q2a1 = 1; q2a1 <= 2; q2a1++) {
-                for (let q2a4 = 1; q2a4 <= 2; q2a4++) {
-                    await testAnswerCombo(q1a1, q1a4, q2a1, q2a4, expected);
-                    test_counter++;
-                }
-            }
-        }
-    }
+    await testAnswerCombo(1, 1, 3, 3, expected);
+    await testAnswerCombo(3, 3, 1, 1, expected);
+    await testAnswerCombo(3, 3, 3, 3, expected);
+
+    test_counter += 3;
 }
 
 async function testSubmitQuestionnaireResponse_For_Level2RiskProfile() {
@@ -102,7 +98,6 @@ async function testSubmitQuestionnaireResponse_For_Level2RiskProfile() {
 }
 
 async function testSubmitQuestionnaireResponse_For_Level3RiskProfile() {
-
     const expected = {
         riskProfile: {
             level: 3,
@@ -110,13 +105,17 @@ async function testSubmitQuestionnaireResponse_For_Level3RiskProfile() {
         }, schoolGrouping: dummyGrouping
     };
 
-    await testAnswerCombo(1, 1, 3, 3, expected);
-    await testAnswerCombo(3, 3, 1, 1, expected);
-    await testAnswerCombo(3, 3, 3, 3, expected);
-
-    test_counter += 3;
+    for (let q1a1 = 1; q1a1 <= 2; q1a1++) {
+        for (let q1a4 = 1; q1a4 <= 2; q1a4++) {
+            for (let q2a1 = 1; q2a1 <= 2; q2a1++) {
+                for (let q2a4 = 1; q2a4 <= 2; q2a4++) {
+                    await testAnswerCombo(q1a1, q1a4, q2a1, q2a4, expected);
+                    test_counter++;
+                }
+            }
+        }
+    }
 }
-
 
 let test_counter = 0;
 const begin = Date.now();

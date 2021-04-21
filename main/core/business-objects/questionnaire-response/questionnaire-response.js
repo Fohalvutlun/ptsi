@@ -34,12 +34,12 @@ export default function buildMakeQuestionnaireResponse({
 			// Needs refactoring
 			if (answers.get(1).getChoice() == 3) {
 				if (answers.get(4).getChoice() == 3) {
-					level = 3;
+					level = 1;
 				} else {
 					level = 2;
 				}
 			} else {
-				level = 1;
+				level = 3;
 			}
 
 			riskProfile = makeRiskProfile({level});
