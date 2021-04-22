@@ -20,7 +20,7 @@ export default function makeSubmitQuestionnaireResponse({
 
     async function submit(submissionRequest) {
         if (!submissionRequestValidator.isValid(submissionRequest)) {
-            const failData = prepareFailData('The submission request is improperly formatted.');
+            const failData = prepareFailData('The submission request data is invalid.');
             return submitQuestionnaireResponseOutputPort.prepareFailView(failData);
         }
 

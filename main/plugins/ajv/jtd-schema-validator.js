@@ -1,20 +1,22 @@
 import AJV from "ajv/dist/jtd.js";
 
-export default function buildMakeJTDSchemaValidator(){
-    
+export default function makeJTDSchemaValidator() {
+
     const ajv = new AJV();
-    
-    return makeJTDSchemaValidator;
-    
-    function makeJTDSchemaValidator(schema){
+
+    return Object.freeze({
+        instantiateSchema
+    });
+
+    function instantiateSchema(schema) {
 
         const validateJTD = ajv.compile(schema);
-    
+
         return Object.freeze({
-            isValidSchema
+            hasValidSchema
         });
-    
-        function isValidSchema(object){
+
+        function hasValidSchema(object) {
             return validateJTD(object);
         }
     }

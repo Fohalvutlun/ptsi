@@ -1,9 +1,9 @@
 export default function makeSubmissionRequestValidator({
     submissionRequestModelValidatorGateway,
-    makeJTDSchemaValidator
+    jtdSchemaValidator
 }) {
 
-    const { isValidSchema } = makeJTDSchemaValidator(submissionRequestModelJTDSchema);
+    const { hasValidSchema } = jtdSchemaValidator.instantiateSchema(submissionRequestModelJTDSchema);
 
     return Object.freeze({
         isValid
@@ -11,7 +11,7 @@ export default function makeSubmissionRequestValidator({
 
     function isValid(submissionRequest) {
         return (
-            isValidSchema(submissionRequest)
+            hasValidSchema(submissionRequest)
             && areResponsesValid(submissionRequest.responses)
             && isRespondentValid(submissionRequest.respondent)
 

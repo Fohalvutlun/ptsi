@@ -1,19 +1,28 @@
-import { toDecimal } from '../../../utilities/roman-numerals.js';
+import { toDecimalConverter } from '../../../utilities/roman-numerals-converter.js';
 import makeSubmissionRequestBuilder from '../../../core/submit-questionnaire-responses/models/submission-request-model.js';
 
 export default function makeSubmitQuestionnaireAnswersWebAPIController({
-    submitQuestionnaireRespondeInputPort
+    submitQuestionnaireRespondeInputPort,
+    submitQuestionnaireAnswersWebAPIRequestValidator,
+    inputErrorPresenter
 }) {
-
     const submitQuestionnaireAnswersWebAPIControllerBehaviour = {
         execute
     };
 
     return Object.freeze(submitQuestionnaireAnswersWebAPIControllerBehaviour);
 
-    function execute(webAPIRequest) {
-        const body = webAPIRequest.body;
+    async function execute(webAPIRequest) {
 
+        if (!submitQuestionnaireAnswersWebAPIRequestValidator.isValid(webAPIRequest)) {
+            return inputErrorPresenter.prepareFailView({message:'The web request\'s format or structure is invalid.'});
+        }
+
+        const submissionRequest = prepareSubmissionRequest(webAPIRequest.body);
+        return await submitQuestionnaireRespondeInputPort.submit(submissionRequest);
+    }
+
+    function prepareSubmissionRequest(body) {
         const builder = makeSubmissionRequestBuilder()
             .setRespondent(body.respondent.age, body.respondent.gender.toLowerCase(), body.respondent.groupingCode);
         for (let questionnaireResponse of body.questionnaireResponses) {
@@ -28,15 +37,20 @@ export default function makeSubmitQuestionnaireAnswersWebAPIController({
                 .addAnswer(questionnaireResponse.questionnaireCode, 6, answerToInteger(response.question2_2))
         }
 
-        const submissionRequest = builder.makeSubmissionRequest();
-        return submitQuestionnaireRespondeInputPort.submit(submissionRequest);
+        return builder.makeSubmissionRequest();
     }
 
     function answerToInteger(answer) {
-        const answerNum = toDecimal(answer.split('.').pop());
+        const answerNum = toDecimalConverter(answer.split('.').pop()).getDecimal();
         return answerNum === 0 ? null : answerNum;
     }
 }
 
-//1.iii
-//1.1.iv
+function prepareFailView(message) {
+    return {
+        statusCode: 400,
+        body: {
+            error: { errorMessage: message }
+        }
+    };
+}
