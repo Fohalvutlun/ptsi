@@ -24,9 +24,11 @@ import makeSubmitQuestionnaireAnswersWebAPIPresenter from './plugins/express-web
 // Use Cases
 import makeSubmitQuestionnaireResponse from './core/submit-questionnaire-responses/submit-questionnaire-responses.js';
 // Validators
-import makeSubmissionRequestValidator from './core/submit-questionnaire-responses/submission-request-model-validator.js'
+import makeSubmissionRequestValidator from './core/submit-questionnaire-responses/submission-request-model-validator.js';
+import makeSubmitQuestionnaireAnswersWebAPIRequestValidator from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-request-validator.js';
+
 // Services
-import buildMakeJTDSchemaValidator from './plugins/ajv/jtd-schema-validator.js';
+import makeJTDSchemaValidator from './plugins/ajv/jtd-schema-validator.js';
 
 
 
@@ -37,6 +39,8 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
 
     const sequelizeModels = await setupSequelizeModels();
     const nodeCacheModels = await setupNodeCache();
+    const ajvJTDValidator = makeJTDSchemaValidator();
+
 
     const app = mountMiddlewares(Express());
     app.set('trust proxy', 1);
@@ -50,9 +54,13 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
                     submitQuestionnaireResponseGateway: makeSubmitQuestionnaireResponseGateway(sequelizeModels),
                     submissionRequestValidator: makeSubmissionRequestValidator({
                         submissionRequestModelValidatorGateway: makeSubmissionRequestModelValidatorGateway(nodeCacheModels),
-                        makeJTDSchemaValidator: buildMakeJTDSchemaValidator()
+                        jtdSchemaValidator: ajvJTDValidator
                     })
-                })
+                }),
+                submitQuestionnaireAnswersWebAPIRequestValidator: makeSubmitQuestionnaireAnswersWebAPIRequestValidator({
+                    jtdSchemaValidator: ajvJTDValidator
+                }),
+                inputErrorPresenter: makeSubmitQuestionnaireAnswersWebAPIPresenter()
             })));
 
     var server = http.createServer(app);
