@@ -23,8 +23,11 @@ import makeSubmitQuestionnaireAnswersWebAPIController from './plugins/express-we
 import makeSubmitQuestionnaireAnswersWebAPIPresenter from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-presenter.js';
 // Use Cases
 import makeSubmitQuestionnaireResponse from './core/submit-questionnaire-responses/submit-questionnaire-responses.js';
-//Validators
+// Validators
 import makeSubmissionRequestValidator from './core/submit-questionnaire-responses/submission-request-model-validator.js'
+// Services
+import buildMakeJTDSchemaValidator from './plugins/ajv/jtd-schema-validator.js';
+
 
 
 const ApplicationProperties = Object.assign({}, process.env);
@@ -46,7 +49,8 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
                     submitQuestionnaireResponseOutputPort: makeSubmitQuestionnaireAnswersWebAPIPresenter(),
                     submitQuestionnaireResponseGateway: makeSubmitQuestionnaireResponseGateway(sequelizeModels),
                     submissionRequestValidator: makeSubmissionRequestValidator({
-                        submissionRequestModelValidatorGateway: makeSubmissionRequestModelValidatorGateway(nodeCacheModels)
+                        submissionRequestModelValidatorGateway: makeSubmissionRequestModelValidatorGateway(nodeCacheModels),
+                        makeJTDSchemaValidator: buildMakeJTDSchemaValidator()
                     })
                 })
             })));
@@ -55,7 +59,7 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
     server.on('error', (err) => console.error(err));
     server.on('listening', () => console.log('Server turned on %s, listening on port %d', new Date().toString(), server.address().port));
     server.listen(ApplicationProperties.WEB_PORT);
-    
+
 })();
 
 
