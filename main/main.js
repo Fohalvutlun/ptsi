@@ -155,7 +155,8 @@ function makeSequelizeOptions() {
                 encrypt: ApplicationProperties.SEQUELIZE_ENCRYPT === 'true',
                 enableArithAbort: ApplicationProperties.SEQUELIZE_ARITH_ABORT === 'true'
             }
-        }
+        },
+        logging: false
     }
 }
 
