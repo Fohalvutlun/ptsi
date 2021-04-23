@@ -8,10 +8,6 @@ export default function buildMakeAnswer() {
 	}) {
 
 
-		if (!choice) {
-			throw Error("Answer must have not be empty");
-		}
-
 		if (!question) {
 			throw Error("Answer must have an associated question");
 		}

@@ -70,11 +70,9 @@ async function testSubmitQuestionnaireResponse_For_Level1RiskProfile() {
         }, schoolGrouping: dummyGrouping
     };
 
-    await testAnswerCombo(1, 1, 3, 3, expected);
-    await testAnswerCombo(3, 3, 1, 1, expected);
     await testAnswerCombo(3, 3, 3, 3, expected);
 
-    test_counter += 3;
+    test_counter += 1;
 }
 
 async function testSubmitQuestionnaireResponse_For_Level2RiskProfile() {
@@ -85,16 +83,14 @@ async function testSubmitQuestionnaireResponse_For_Level2RiskProfile() {
         }, schoolGrouping: dummyGrouping
     };
 
-    await testAnswerCombo(1, 1, 3, 1, expected);
-    await testAnswerCombo(1, 1, 3, 2, expected);
-
-    await testAnswerCombo(3, 1, 3, 1, expected);
-    await testAnswerCombo(3, 1, 3, 2, expected);
-
-    await testAnswerCombo(3, 2, 3, 1, expected);
-    await testAnswerCombo(3, 2, 3, 2, expected);
-
-    test_counter += 6;
+    for (let q1a2 = 1; q1a2 <= 3; q1a2++) {
+        for (let q2a2 = 1; q2a2 <= 3; q2a2++) {
+            if (q1a2 !== 3 || q2a2 !== 3) {
+                await testAnswerCombo(3, q1a2, 3, q2a2, expected);
+                test_counter++;
+            }
+        }
+    }
 }
 
 async function testSubmitQuestionnaireResponse_For_Level3RiskProfile() {
@@ -105,12 +101,14 @@ async function testSubmitQuestionnaireResponse_For_Level3RiskProfile() {
         }, schoolGrouping: dummyGrouping
     };
 
-    for (let q1a1 = 1; q1a1 <= 2; q1a1++) {
-        for (let q1a4 = 1; q1a4 <= 2; q1a4++) {
-            for (let q2a1 = 1; q2a1 <= 2; q2a1++) {
-                for (let q2a4 = 1; q2a4 <= 2; q2a4++) {
-                    await testAnswerCombo(q1a1, q1a4, q2a1, q2a4, expected);
-                    test_counter++;
+    for (let q1a1 = 1; q1a1 <= 3; q1a1++) {
+        for (let q1a4 = 1; q1a4 <= 3; q1a4++) {
+            for (let q2a1 = 1; q2a1 <= 3; q2a1++) {
+                for (let q2a4 = 1; q2a4 <= 3; q2a4++) {
+                    if (q1a1 !== 3 || q2a1 !== 3) {
+                        await testAnswerCombo(q1a1, q1a4, q2a1, q2a4, expected);
+                        test_counter++;
+                    }
                 }
             }
         }

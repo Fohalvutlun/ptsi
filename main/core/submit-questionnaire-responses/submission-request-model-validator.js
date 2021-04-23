@@ -12,28 +12,71 @@ export default function makeSubmissionRequestValidator({
     function isValid(submissionRequest) {
         return (
             hasValidSchema(submissionRequest)
-            && areResponsesValid(submissionRequest.responses)
             && isRespondentValid(submissionRequest.respondent)
-
+            && areResponsesValid(submissionRequest.responses)
         );
     }
 
     function areResponsesValid(responses) {
         return (
             responses.length === 2
-            && responses.every((response) => isResponseValid(response))
+            && responses.every(response => isResponseValid(response))
         );
     }
 
     function isResponseValid(response) {
         return (
-            areAnswersValid(response.answers)
-            && isQuestionnaireCodeValid(response.questionnaireCode)
+            isQuestionnaireCodeValid(response.questionnaireCode)
+            && areAnswersValid(response.answers)
         );
     }
 
     function areAnswersValid(answers) {
-        return answers.length >= 2;
+        return (
+            numberOfAnswersIsValid(answers)
+            && answers.every(answer => isAnswerValid(answer))
+            && isAnswerSequenceValid(answers)
+        );
+    }
+
+    function numberOfAnswersIsValid(answers) {
+        const numOfAnswersMade = answers.reduce((counter, answer) => answer.answerChoice !== null ? counter + 1 : counter, 0);
+        return (
+            numOfAnswersMade >= 2
+            && numOfAnswersMade <= 4
+        );
+    }
+
+    function isAnswerSequenceValid(answers) {
+        return (
+            atMaxOneBranchWasTaken(answers, [2, 3])
+            && atMaxOneBranchWasTaken(answers, [5, 6])
+        );
+    }
+
+    function atMaxOneBranchWasTaken(answers, branchQuestionIdentifiers = []) {
+        return branchQuestionIdentifiers.some(code => {
+            const res = answers.findIndex(answer => answer.questionIdentifier === code && answer.answerChoice !== null) === -1
+            return res;
+        });
+    }
+
+    function isAnswerValid(answer) {
+        return (
+            isMandatoryAnswer(answer)
+            || isOptionalAnswer(answer)
+        );
+    }
+
+    function isMandatoryAnswer(answer) {
+        return (
+            mandatoryQuestionIDs.includes(answer.questionIdentifier)
+            && answer.answerChoice !== null
+        );
+    }
+
+    function isOptionalAnswer(answer) {
+        return optionalQuestionIDs.includes(answer.questionIdentifier);
     }
 
     function isQuestionnaireCodeValid(questionnaireCode) {
@@ -59,6 +102,9 @@ export default function makeSubmissionRequestValidator({
         return schoolGroupingCodeExists;
     }
 }
+
+const mandatoryQuestionIDs = [1, 4];
+const optionalQuestionIDs = [2, 3, 5, 6];
 
 const submissionRequestModelJTDSchema = {
     ref: "submissionRequest",
@@ -95,7 +141,7 @@ const submissionRequestModelJTDSchema = {
         answer: {
             properties: {
                 questionIdentifier: { type: 'uint8' },
-                answerChoice: { type: 'uint8' }
+                answerChoice: { type: 'uint8', nullable: true }
             }
         }
     }

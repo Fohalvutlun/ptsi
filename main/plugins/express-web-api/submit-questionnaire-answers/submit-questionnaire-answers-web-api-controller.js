@@ -15,7 +15,7 @@ export default function makeSubmitQuestionnaireAnswersWebAPIController({
     async function execute(webAPIRequest) {
 
         if (!submitQuestionnaireAnswersWebAPIRequestValidator.isValid(webAPIRequest)) {
-            return inputErrorPresenter.prepareFailView({message:'The web request\'s format or structure is invalid.'});
+            return inputErrorPresenter.prepareFailView({ message: 'The web request\'s format or structure is invalid.' });
         }
 
         const submissionRequest = prepareSubmissionRequest(webAPIRequest.body);
@@ -29,28 +29,22 @@ export default function makeSubmitQuestionnaireAnswersWebAPIController({
             const response = questionnaireResponse.response;
 
             builder
-                .addAnswer(questionnaireResponse.questionnaireCode, 1, answerToInteger(response.question1))
-                .addAnswer(questionnaireResponse.questionnaireCode, 2, answerToInteger(response.question1_1))
-                .addAnswer(questionnaireResponse.questionnaireCode, 3, answerToInteger(response.question1_2))
-                .addAnswer(questionnaireResponse.questionnaireCode, 4, answerToInteger(response.question2))
-                .addAnswer(questionnaireResponse.questionnaireCode, 5, answerToInteger(response.question2_1))
-                .addAnswer(questionnaireResponse.questionnaireCode, 6, answerToInteger(response.question2_2))
+                .addAnswer(questionnaireResponse.questionnaireCode, 1, attemptAnswerToInteger(response.question1))
+                .addAnswer(questionnaireResponse.questionnaireCode, 2, attemptAnswerToInteger(response.question1_1))
+                .addAnswer(questionnaireResponse.questionnaireCode, 3, attemptAnswerToInteger(response.question1_2))
+                .addAnswer(questionnaireResponse.questionnaireCode, 4, attemptAnswerToInteger(response.question2))
+                .addAnswer(questionnaireResponse.questionnaireCode, 5, attemptAnswerToInteger(response.question2_1))
+                .addAnswer(questionnaireResponse.questionnaireCode, 6, attemptAnswerToInteger(response.question2_2))
         }
 
         return builder.makeSubmissionRequest();
     }
 
-    function answerToInteger(answer) {
-        const answerNum = toDecimalConverter(answer.split('.').pop()).getDecimal();
-        return answerNum === 0 ? null : answerNum;
+    function attemptAnswerToInteger(answer) {
+        return answer != null ? answerToInteger(answer) : answer;
     }
-}
 
-function prepareFailView(message) {
-    return {
-        statusCode: 400,
-        body: {
-            error: { errorMessage: message }
-        }
-    };
+    function answerToInteger(answer) {
+        return toDecimalConverter(answer.split('.').pop()).getDecimal();
+    }
 }

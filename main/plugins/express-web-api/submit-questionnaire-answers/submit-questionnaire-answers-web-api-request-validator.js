@@ -31,7 +31,10 @@ export default function makeSubmitQuestionnaireAnswersWebAPIRequestValidator({
     }
 
     function isResponseValid(response) {
-        return Object.values(response).every(answer => answerEndsWithRomanNumeral(answer));
+        return (
+            answerEndsWithRomanNumeral(response.question1)
+            && answerEndsWithRomanNumeral(response.question2)
+        );
     }
 
     function answerEndsWithRomanNumeral(answer) {
@@ -62,15 +65,15 @@ const webAPIRequestBodyJTDSchema = {
         },
         questionnaireResponse: {
             properties: {
-                questionnaireCode: { type: 'uint8'},
+                questionnaireCode: { type: 'uint8' },
                 response: {
                     properties: {
                         question1: { type: 'string' },
-                        question1_1: { type: 'string' },
-                        question1_2: { type: 'string' },
+                        question1_1: { type: 'string', nullable: true },
+                        question1_2: { type: 'string', nullable: true },
                         question2: { type: 'string' },
-                        question2_1: { type: 'string' },
-                        question2_2: { type: 'string' }
+                        question2_1: { type: 'string', nullable: true },
+                        question2_2: { type: 'string', nullable: true }
                     }
                 }
 
