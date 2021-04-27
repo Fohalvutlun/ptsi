@@ -43,6 +43,7 @@ export default function makeSubmitQuestionnaireResponse({
         return makeGatewayRequestBuilder()
             .setRespondent(respondent.getAge(), respondent.getGender(), respondent.getSchoolGrouping())
             .setMomentOfSubmission(questionnaireSubmission.getMomentOfSubmission())
+            .setSubmissionRiskProfile(questionnaireSubmission.getRiskProfile().getLevel(),questionnaireSubmission.getRiskProfile().getDesignation())
             .setQuestionnaireResponses(questionnaireSubmission.getQuestionnaireResponses())
             .makeGatewayRequest();
     }

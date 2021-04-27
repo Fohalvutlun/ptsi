@@ -10,6 +10,7 @@ export default function makeGatewayRequestBuilder() {
     const builderBehaviour = {
         setRespondent,
         setMomentOfSubmission,
+        setSubmissionRiskProfile,
         setQuestionnaireResponses,
         makeGatewayRequest
     };
@@ -25,19 +26,24 @@ export default function makeGatewayRequestBuilder() {
             schoolGrouping: schoolGroupingData,
         }
 
-        return builderBehaviour;
+        return Object.freeze(builderBehaviour);
     }
 
     function setMomentOfSubmission(momentOfSubmission) {
         requestData.momentOfSubmission = momentOfSubmission;
-        return builderBehaviour;
+        return Object.freeze(builderBehaviour);
+    }
+
+    function setSubmissionRiskProfile(level,designation) {
+        requestData.submissionRiskProfile = {level,designation};
+        return Object.freeze(builderBehaviour);
     }
 
     function setQuestionnaireResponses(questionnaireResponsesMap) {
         requestData.questionnaireResponses = Array.from(questionnaireResponsesMap.values(), (questionnaireResponseEntity) => {
             return getQuestionnaireResponseData(questionnaireResponseEntity);
         });
-        return builderBehaviour;
+        return Object.freeze(builderBehaviour);
     }
 
     function makeGatewayRequest() {

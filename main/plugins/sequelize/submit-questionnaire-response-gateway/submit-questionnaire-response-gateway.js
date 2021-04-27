@@ -3,7 +3,8 @@ export default function makeSubmitQuestionnaireResponseGateway({
     SchoolGrouping,
     RespondentProfile,
     QuestionnaireResponse,
-    Questionnaire
+    Questionnaire,
+    Submission
 }) {
 
     const gateway = {
@@ -13,7 +14,7 @@ export default function makeSubmitQuestionnaireResponseGateway({
     }
     return Object.freeze(gateway);
 
-    async function insert({ respondent, momentOfSubmission, questionnaireResponses }) {
+    async function insert({ respondent, momentOfSubmission, submissionRiskProfile, questionnaireResponses }) {
         const
             schoolGroupingModel = await SchoolGrouping.findOne({ where: { schoolGroupingCode: respondent.schoolGrouping.code } }),
             respodentProfileModel = await makeRespodentProfileModel(respondent.age, respondent.gender),
@@ -21,6 +22,7 @@ export default function makeSubmitQuestionnaireResponseGateway({
 
         await saveQuestionnaireResponses(
             questionnaireResponses,
+            submissionRiskProfile,
             respodentProfileModel.profileId,
             schoolGroupingModel.schoolGroupingId,
             timeModel.timeId
@@ -60,21 +62,28 @@ export default function makeSubmitQuestionnaireResponseGateway({
         return respodentProfileModel;
     }
 
-    async function saveQuestionnaireResponses(questionnaireResponses, respondentProfileId, schoolGroupingId, timeId) {
-        for (let questionnaireResponse of questionnaireResponses) {
-            const questionnaire = await Questionnaire.findOne({ where: { questionnaireCode: questionnaireResponse.questionnaire.code } });
-
-            await saveOneQuestionnaireResponse(
-                questionnaireResponse,
-                respondentProfileId,
-                schoolGroupingId,
+    async function saveQuestionnaireResponses(questionnaireResponses, submissionRiskProfile, respondentProfileId, schoolGroupingId, timeId) {
+        await Submission.sequelize.transaction(async (transaction) => {
+            const submission = await Submission.create({
+                risk: submissionRiskProfile.level,
                 timeId,
-                questionnaire.questionnaireId
-            );
-        }
+                schoolGroupingId,
+                respondentProfileId,
+            }, { transaction });
+            for (let questionnaireResponse of questionnaireResponses) {
+                const questionnaire = await Questionnaire.findOne({ where: { questionnaireCode: questionnaireResponse.questionnaire.code } });
+
+                await saveOneQuestionnaireResponse(
+                    questionnaireResponse,
+                    submission.submissionId,
+                    questionnaire.questionnaireId,
+                    transaction
+                );
+            }
+        });
     }
 
-    async function saveOneQuestionnaireResponse(questionnaireResponse, respondentProfileId, schoolGroupingId, timeId, questionnaireId) {
+    async function saveOneQuestionnaireResponse(questionnaireResponse, submissionId, questionnaireId, transaction) {
         return await QuestionnaireResponse.create({
             questionNo1: questionnaireResponse.answers.get(1),
             questionNo2: questionnaireResponse.answers.get(2),
@@ -83,11 +92,9 @@ export default function makeSubmitQuestionnaireResponseGateway({
             questionNo5: questionnaireResponse.answers.get(5),
             questionNo6: questionnaireResponse.answers.get(6),
             risk: questionnaireResponse.riskProfile.level,
-            timeId,
-            schoolGroupingId,
-            respondentProfileId,
-            questionnaireId
-        });
+            questionnaireId,
+            submissionId
+        }, { transaction });
     }
 
     function makeQuestionnaireData(questionnaireModel) {

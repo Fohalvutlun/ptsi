@@ -1,8 +1,6 @@
 export default function makeQuestionnaireResponseModel(sequelize, DataTypes, {
-    Time,
-    SchoolGrouping,
-    RespondentProfile,
-    Questionnaire
+    Questionnaire,
+    Submission
 }) {
 
     const questionnaireResponseAttributes = {
@@ -47,33 +45,6 @@ export default function makeQuestionnaireResponseModel(sequelize, DataTypes, {
             type: DataTypes.STRING(45),
             allowNull: false
         },
-        timeId: {
-            field: 'id_tempo',
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: Time,
-                key: 'id_tempo'
-            }
-        },
-        schoolGroupingId: {
-            field: 'id_dados_agrupamento',
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: SchoolGrouping,
-                key: 'id_dados_agrupamento'
-            }
-        },
-        respondentProfileId: {
-            field: 'id_dados_sociodemograficos',
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: RespondentProfile,
-                key: 'id_dados_sociodemograficos'
-            }
-        },
         questionnaireId: {
             field: 'id_questionario',
             type: DataTypes.INTEGER,
@@ -81,6 +52,15 @@ export default function makeQuestionnaireResponseModel(sequelize, DataTypes, {
             references: {
                 model: Questionnaire,
                 key: 'id_questionario'
+            }
+        },
+        submissionId: {
+            field: 'id_submissao',
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: Submission,
+                key: 'id_submissao'
             }
         }
     };
@@ -93,15 +73,12 @@ export default function makeQuestionnaireResponseModel(sequelize, DataTypes, {
         deletedAt: false
     });
 
-    associateManyQuestionnaireResponsesToOne(Time, 'id_tempo');
-    associateManyQuestionnaireResponsesToOne(SchoolGrouping, 'id_dados_agrupamento');
-    associateManyQuestionnaireResponsesToOne(RespondentProfile, 'id_dados_sociodemograficos');
-    associateManyQuestionnaireResponsesToOne(Questionnaire, 'id_questionario');
+    associateQuestionnaireResponsesToOne(Questionnaire, 'id_questionario');
+    associateQuestionnaireResponsesToOne(Submission,'id_submissao');
 
     return questionnaireResponseModel;
 
-
-    function associateManyQuestionnaireResponsesToOne(model, foreignKeyName) {
+    function associateQuestionnaireResponsesToOne(model, foreignKeyName) {
         model.hasMany(questionnaireResponseModel, { foreignKey: foreignKeyName });
         questionnaireResponseModel.belongsTo(model, { foreignKey: foreignKeyName });
     }

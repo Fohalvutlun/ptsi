@@ -3,6 +3,7 @@ import makeSchoolGroupingModel from './school-grouping.js';
 import makeRespondentProfileModel from './respondent-profile.js';
 import makeQuestionnaireResponseModel from './questionnaire-response.js';
 import makeQuestionnaireModel from './questionnaire.js';
+import makeSubmissionModel from './submission.js';
 
 import pkg from 'sequelize';
 const { DataTypes } = pkg;
@@ -13,11 +14,14 @@ export default function makeSequelizeModels(sequelize) {
         SchoolGrouping = makeSchoolGroupingModel(sequelize, DataTypes),
         RespondentProfile = makeRespondentProfileModel(sequelize, DataTypes),
         Questionnaire = makeQuestionnaireModel(sequelize, DataTypes),
-        QuestionnaireResponse = makeQuestionnaireResponseModel(sequelize, DataTypes, {
+        Submission = makeSubmissionModel(sequelize, DataTypes, {
             Time,
             SchoolGrouping,
             RespondentProfile,
-            Questionnaire
+        }),
+        QuestionnaireResponse = makeQuestionnaireResponseModel(sequelize, DataTypes, {
+            Questionnaire,
+            Submission
         });
 
     return {
@@ -25,6 +29,7 @@ export default function makeSequelizeModels(sequelize) {
         SchoolGrouping,
         RespondentProfile,
         Questionnaire,
-        QuestionnaireResponse
+        QuestionnaireResponse,
+        Submission
     };
 }
