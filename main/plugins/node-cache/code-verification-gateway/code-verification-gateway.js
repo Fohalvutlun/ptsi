@@ -1,4 +1,4 @@
-export default function makeSubmissionRequestModelValidatorGateway({
+export default function makeCodeVerificationGateway({
     SchoolGroupingCodes,
     QuestionnaireCodes
 }) {
