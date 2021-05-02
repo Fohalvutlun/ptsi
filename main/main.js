@@ -16,7 +16,7 @@ import makeExpressCallback from './plugins/express-web-api/express-callback/expr
 
 // Gateways
 import makeSubmitQuestionnaireResponseGateway from './plugins/sequelize/submit-questionnaire-response-gateway/submit-questionnaire-response-gateway.js';
-import makeSubmissionRequestModelValidatorGateway from './plugins/node-cache/submit-questionnaire-response-gateway/submission-request-model-validator-gateway.js';
+import makeCodeVerificationGateway from './plugins/node-cache/code-verification-gateway/code-verification-gateway.js';
 // Controllers
 import makeSubmitQuestionnaireAnswersWebAPIController from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-controller.js';
 // Presenters
@@ -53,7 +53,7 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
                     submitQuestionnaireResponseOutputPort: makeSubmitQuestionnaireAnswersWebAPIPresenter(),
                     submitQuestionnaireResponseGateway: makeSubmitQuestionnaireResponseGateway(sequelizeModels),
                     submissionRequestValidator: makeSubmissionRequestValidator({
-                        submissionRequestModelValidatorGateway: makeSubmissionRequestModelValidatorGateway(nodeCacheModels),
+                        submissionRequestModelValidatorGateway: makeCodeVerificationGateway(nodeCacheModels),
                         jtdSchemaValidator: ajvJTDValidator
                     })
                 }),
