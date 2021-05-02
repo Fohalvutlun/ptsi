@@ -14,7 +14,7 @@ export default function makeSubmissionModel(sequelize, DataTypes, {
         },
         risk: {
             field: 'risco',
-            type: DataTypes.STRING(45),
+            type: DataTypes.INTEGER,
             allowNull: false
         },
         timeId: {
