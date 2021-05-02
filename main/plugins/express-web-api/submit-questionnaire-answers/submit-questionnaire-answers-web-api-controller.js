@@ -2,7 +2,7 @@ import { toDecimalConverter } from '../../../utilities/roman-numerals-converter.
 import makeSubmissionRequestBuilder from '../../../core/submit-questionnaire-responses/models/submission-request-model.js';
 
 export default function makeSubmitQuestionnaireAnswersWebAPIController({
-    submitQuestionnaireRespondeInputPort,
+    submitQuestionnaireResponsesInputPort,
     submitQuestionnaireAnswersWebAPIRequestValidator,
     inputErrorPresenter
 }) {
@@ -19,7 +19,7 @@ export default function makeSubmitQuestionnaireAnswersWebAPIController({
         }
 
         const submissionRequest = prepareSubmissionRequest(webAPIRequest.body);
-        return await submitQuestionnaireRespondeInputPort.submit(submissionRequest);
+        return await submitQuestionnaireResponsesInputPort.submit(submissionRequest);
     }
 
     function prepareSubmissionRequest(body) {
