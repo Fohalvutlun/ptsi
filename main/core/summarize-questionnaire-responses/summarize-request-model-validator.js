@@ -1,4 +1,4 @@
-export default function makeSubmissionRequestValidator({
+export default function makeSummarizeRequestValidator({
     summarizeRequestModelValidatorGateway,
     jtdSchemaValidator
 }) {
