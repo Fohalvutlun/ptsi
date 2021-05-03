@@ -15,21 +15,44 @@ import cors from 'cors';
 import makeExpressCallback from './plugins/express-web-api/express-callback/express-callback.js';
 
 // Gateways
-import makeSubmitQuestionnaireResponseGateway from './plugins/sequelize/submit-questionnaire-response-gateway/submit-questionnaire-response-gateway.js';
-import makeCodeVerificationGateway from './plugins/node-cache/code-verification-gateway/code-verification-gateway.js';
+import makeSubmitQuestionnaireResponseGateway
+    from './plugins/sequelize/submit-questionnaire-response-gateway/submit-questionnaire-response-gateway.js';
+import makeSummarizeQuestionnaireResponsesGateway
+    from './plugins/sequelize/summarize-questionnaire-responses-gateway/summarize-questionnaire-responses-gateway.js';
+import makeCodeVerificationGateway
+    from './plugins/node-cache/code-verification-gateway/code-verification-gateway.js';
+
 // Controllers
-import makeSubmitQuestionnaireAnswersWebAPIController from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-controller.js';
+import makeSubmitQuestionnaireAnswersWebAPIController
+    from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-controller.js';
+import makeSummarizeQuestionnaireResponsesWebAPIController
+    from './plugins/express-web-api/summarize-questionnaire-responses/summarize-questionnaire-responses-web-api-controller.js';
+
 // Presenters
-import makeSubmitQuestionnaireAnswersWebAPIPresenter from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-presenter.js';
+import makeSubmitQuestionnaireAnswersWebAPIPresenter
+    from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-presenter.js';
+import makeSummarizeQuestionnaireResponsesWebAPIPresenter
+    from './plugins/express-web-api/summarize-questionnaire-responses/summarize-questionnaire-responses-web-api-presenter.js';
+
 // Use Cases
-import makeSubmitQuestionnaireResponse from './core/submit-questionnaire-responses/submit-questionnaire-responses.js';
+import makeSubmitQuestionnaireResponse
+    from './core/submit-questionnaire-responses/submit-questionnaire-responses.js';
+import makeSummarizeQuestionnaireResponses
+    from './core/summarize-questionnaire-responses/summarize-questionnaire-responses.js';
+
 // Validators
-import makeSubmissionRequestValidator from './core/submit-questionnaire-responses/submission-request-model-validator.js';
-import makeSubmitQuestionnaireAnswersWebAPIRequestValidator from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-request-validator.js';
+import makeSubmissionRequestValidator
+    from './core/submit-questionnaire-responses/submission-request-model-validator.js';
+import makeSubmitQuestionnaireAnswersWebAPIRequestValidator
+    from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-request-validator.js';
+import makeSummarizeRequestValidator
+    from './core/summarize-questionnaire-responses/summarize-request-model-validator.js';
+import makeSummarizeQuestionnaireResponsesWebAPIRequestValidator
+    from './plugins/express-web-api/summarize-questionnaire-responses/summarize-questionnaire-responses-web-api-request-validator.js';
 
 // Services
-import makeJTDSchemaValidator from './plugins/ajv/jtd-schema-validator.js';
-
+import makeJTDSchemaValidator
+    from './plugins/ajv/jtd-schema-validator.js';
 
 
 const ApplicationProperties = Object.assign({}, process.env);
@@ -62,6 +85,24 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
                 }),
                 inputErrorPresenter: makeSubmitQuestionnaireAnswersWebAPIPresenter()
             })));
+    app.post('/questionnaire/response/summary',
+        makeExpressCallback(
+            makeSummarizeQuestionnaireResponsesWebAPIController({
+                summarizeQuestionnaireResponsesInputPort: makeSummarizeQuestionnaireResponses({
+                    summarizeQuestionnaireResponsesOutputPort: makeSummarizeQuestionnaireResponsesWebAPIPresenter(),
+                    summarizeQuestionnaireResponsesGateway: makeSummarizeQuestionnaireResponsesGateway(sequelizeModels),
+                    summarizeRequestValidator: makeSummarizeRequestValidator({
+                        summarizeRequestModelValidatorGateway: makeCodeVerificationGateway(nodeCacheModels),
+                        jtdSchemaValidator: ajvJTDValidator
+                    })
+                }),
+                summarizeQuestionnaireResponsesWebAPIRequestValidator: makeSummarizeQuestionnaireResponsesWebAPIRequestValidator({
+                    jtdSchemaValidator: ajvJTDValidator
+                }),
+                inputErrorPresenter: makeSummarizeQuestionnaireResponsesWebAPIPresenter()
+            })));
+
+
 
     var server = http.createServer(app);
     server.on('error', (err) => console.error(err));
