@@ -1,7 +1,7 @@
 export default function makeSummarizeRequestBuilder() {
 
     const requestData = {
-        respodentProfile: {}
+        respondentProfile: {}
     };
 
     const builderBehaviour = {
@@ -12,9 +12,11 @@ export default function makeSummarizeRequestBuilder() {
     return Object.freeze(builderBehaviour);
 
     function setRespondent(age, gender, schoolGroupingCode) {
-        requestData.respondent.age = age;
-        requestData.respondent.gender = gender;
-        requestData.respondent.schoolGroupingCode = schoolGroupingCode;
+        requestData.respondentProfile = {
+            age: age,
+            gender: gender,
+            schoolGroupingCode: schoolGroupingCode
+        };
 
         return Object.freeze(builderBehaviour);;
     }
