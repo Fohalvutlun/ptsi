@@ -72,7 +72,7 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
     app.post('/questionnaire/response/submit',
         makeExpressCallback(
             makeSubmitQuestionnaireAnswersWebAPIController({
-                submitQuestionnaireRespondeInputPort: makeSubmitQuestionnaireResponse({
+                submitQuestionnaireResponsesInputPort: makeSubmitQuestionnaireResponse({
                     submitQuestionnaireResponseOutputPort: makeSubmitQuestionnaireAnswersWebAPIPresenter(),
                     submitQuestionnaireResponseGateway: makeSubmitQuestionnaireResponseGateway(sequelizeModels),
                     submissionRequestValidator: makeSubmissionRequestValidator({
