@@ -11,7 +11,7 @@ export default function makeSummarizeRequestValidator({
         return (
             hasValidSchema(summarizeRequest)
             && isRespondentProfileValid(summarizeRequest.respondentProfile)
-            && isDateValid(summarizeRequest.filter.date)
+            && isDateValid(summarizeRequest.date)
         );
     }
 
