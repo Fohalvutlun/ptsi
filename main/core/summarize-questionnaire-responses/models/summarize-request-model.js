@@ -18,12 +18,12 @@ export default function makeSummarizeRequestBuilder() {
             schoolGroupingCode: schoolGroupingCode
         };
 
-        return Object.freeze(builderBehaviour);;
+        return Object.freeze(builderBehaviour);
     }
 
     function setDate(date) {
         requestData.date = date;
-        return Object.freeze(builderBehaviour);;
+        return Object.freeze(builderBehaviour);
     }
 
     function makeSummarizeRequest() {
