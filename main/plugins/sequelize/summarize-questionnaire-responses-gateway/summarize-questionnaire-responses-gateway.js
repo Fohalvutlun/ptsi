@@ -80,8 +80,13 @@ export default function makeSummarizeQuestionnaireResponsesGateway({
     function addTimeModelIfNeeded(includeArray, date) {
         const where = {};
         if (date) {
-            where.year = { [Op.lte]: date.getFullYear() }
-            where.month = { [Op.lte]: date.getMonth() + 1 }
+            where[Op.or] = {
+                year: { [Op.lt]: date.getFullYear() },
+                [Op.and]: {
+                    month: { [Op.lte]: date.getMonth() + 1 },
+                    year: { [Op.eq]: date.getFullYear() },
+                }
+            }
         }
         return where === {} ? includeArray : includeArray.concat([{ model: Time, where }]);
     }
