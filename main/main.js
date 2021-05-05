@@ -19,6 +19,8 @@ import makeSubmitQuestionnaireResponseGateway
     from './plugins/sequelize/submit-questionnaire-response-gateway/submit-questionnaire-response-gateway.js';
 import makeSummarizeQuestionnaireResponsesGateway
     from './plugins/sequelize/summarize-questionnaire-responses-gateway/summarize-questionnaire-responses-gateway.js';
+import makeSummarizeQuestionGateway
+    from './plugins/sequelize/summarize-question-gateway/summarize-question-gateway.js';
 import makeCodeVerificationGateway
     from './plugins/node-cache/code-verification-gateway/code-verification-gateway.js';
 
@@ -27,18 +29,24 @@ import makeSubmitQuestionnaireAnswersWebAPIController
     from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-controller.js';
 import makeSummarizeQuestionnaireResponsesWebAPIController
     from './plugins/express-web-api/summarize-questionnaire-responses/summarize-questionnaire-responses-web-api-controller.js';
+import makeSummarizeQuestionWebAPIController
+    from './plugins/express-web-api/summarize-question/summarize-question-web-api-controller.js';
 
 // Presenters
 import makeSubmitQuestionnaireAnswersWebAPIPresenter
     from './plugins/express-web-api/submit-questionnaire-answers/submit-questionnaire-answers-web-api-presenter.js';
 import makeSummarizeQuestionnaireResponsesWebAPIPresenter
     from './plugins/express-web-api/summarize-questionnaire-responses/summarize-questionnaire-responses-web-api-presenter.js';
+import makeSummarizeQuestionWebAPIPresenter
+    from './plugins/express-web-api/summarize-question/summarize-question-web-api-presenter.js';
 
 // Use Cases
 import makeSubmitQuestionnaireResponse
     from './core/submit-questionnaire-responses/submit-questionnaire-responses.js';
 import makeSummarizeQuestionnaireResponses
     from './core/summarize-questionnaire-responses/summarize-questionnaire-responses.js';
+import makeSummarizeQuestion
+    from './core/summarize-question/summarize-question.js';
 
 // Validators
 import makeSubmissionRequestValidator
@@ -49,10 +57,15 @@ import makeSummarizeRequestValidator
     from './core/summarize-questionnaire-responses/summarize-request-model-validator.js';
 import makeSummarizeQuestionnaireResponsesWebAPIRequestValidator
     from './plugins/express-web-api/summarize-questionnaire-responses/summarize-questionnaire-responses-web-api-request-validator.js';
+import makeSummarizeQuestionRequestValidator
+    from './core/summarize-question/summarize-question-request-model-validator.js';
+import makeSummarizeQuestionWebAPIRequestValidator
+    from './plugins/express-web-api/summarize-question/summarize-question-web-api-request-validator.js';
 
 // Services
 import makeJTDSchemaValidator
     from './plugins/ajv/jtd-schema-validator.js';
+
 
 
 const ApplicationProperties = Object.assign({}, process.env);
@@ -100,6 +113,23 @@ const getSchoolGroupingDataRows = makeGetSchoolGroupingDataRows(makeAES256gcm(Ap
                     jtdSchemaValidator: ajvJTDValidator
                 }),
                 inputErrorPresenter: makeSummarizeQuestionnaireResponsesWebAPIPresenter()
+            })));
+
+    app.post('/answers/summary',
+        makeExpressCallback(
+            makeSummarizeQuestionWebAPIController({
+                summarizeQuestionInputPort: makeSummarizeQuestion({
+                    summarizeQuestionOutputPort: makeSummarizeQuestionWebAPIPresenter(),
+                    summarizeQuestionGateway: makeSummarizeQuestionGateway(sequelizeModels),
+                    summarizeQuestionRequestValidator: makeSummarizeQuestionRequestValidator({
+                        summarizeQuestionRequestModelValidatorGateway: makeCodeVerificationGateway(nodeCacheModels),
+                        jtdSchemaValidator: ajvJTDValidator
+                    })
+                }),
+                summarizeQuestionWebAPIRequestValidator: makeSummarizeQuestionWebAPIRequestValidator({
+                    jtdSchemaValidator: ajvJTDValidator
+                }),
+                inputErrorPresenter: makeSummarizeQuestionWebAPIPresenter()
             })));
 
 
@@ -197,7 +227,7 @@ function makeSequelizeOptions() {
                 enableArithAbort: ApplicationProperties.SEQUELIZE_ARITH_ABORT === 'true'
             }
         },
-        logging: false
+        logging: ApplicationProperties.SEQUELIZE_LOGGING === 'true'
     }
 }
 
