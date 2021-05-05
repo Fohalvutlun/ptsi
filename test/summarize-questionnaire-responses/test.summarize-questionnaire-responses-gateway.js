@@ -62,7 +62,7 @@ export default async function testSummarizeQuestionnaireResponsesGateway(test_co
                 result = await submitQuestionnaireResponseGateway.countSubmissionsForEachRiskLevel(filter),
                 expected = makeExpected(date, age, gender, schoolGrouping);
 
-            assert.deepStrictEqual(result, expected);
+            assert.deepStrictEqual(result, expected, `####### ${date}, ${age}, ${gender}, ${schoolGrouping}`);
         }
 
         function makeMockRequestModel(date, age, gender, schoolGrouping) {
@@ -91,11 +91,16 @@ export default async function testSummarizeQuestionnaireResponsesGateway(test_co
         function timeLowerThan(submission, providedDate) {
             return dbRecords.time.findIndex(({ timeId, year, month }) =>
                 timeId === submission.timeId
-                && year <= providedDate.getFullYear()
-                && month <= providedDate.getMonth() + 1
+                && (
+                    year < providedDate.getFullYear()
+                    || (
+                        year === providedDate.getFullYear()
+                        && month <= providedDate.getMonth() + 1
+                    )
+                )
             ) >= 0;
         }
-        
+
         function matchesRespondentProfile(submission, providedGender, providedAge) {
             return dbRecords.respondentProfile.findIndex(({ profileId, gender, age }) =>
                 profileId === submission.respondentProfileId
