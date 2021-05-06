@@ -71,32 +71,18 @@ export default function makeSummarizeQuestionnaireResponsesWebAPIPresenter() {
         };
     }
 
-    function makeReactionTotals(reactionTotals) {
-        return makeChoiceTotalsArray(mergeSameReactionTotals(Array.from(reactionTotals.values())));
-    }
-
-    function makeChoiceTotalsArray(reactionTotalsMap) {
-        return Array.from(reactionTotalsMap.entries()).reduce((choiceTotalsArr, [choice, total]) =>
-            choiceTotalsArr.concat([Object.assign({ choice, total })]),
+    function makeReactionTotals(reactionTotalsMap) {
+        return Array.from(reactionTotalsMap.entries()).reduce((totalsArray, [question, choiceTotalsMap]) =>
+            totalsArray.concat(makeReactionTotalsForQuestion(question, choiceTotalsMap)),
             []);
     }
 
-    function mergeSameReactionTotals(reactionTotalsPerQuestion) {
-        return reactionTotalsPerQuestion.reduce((tallyMap, choiceTotalPairs) =>
-            addToTallyKVPairs(tallyMap, Array.from(choiceTotalPairs)),
-            new Map());
+    function makeReactionTotalsForQuestion(question, choiceTotalsMap) {
+        return Array.from(choiceTotalsMap.entries()).reduce((arr, [choice, total]) =>
+            arr.concat([Object.freeze({ question, choice, total })]),
+            []);
     }
-
-    function addToTallyKVPairs(tallyMap, kvPairs) {
-        return kvPairs.reduce((tallyMap, [key, value]) =>
-            addToTally(tallyMap, key, value),
-            tallyMap);
-    }
-
-    function addToTally(map, key, value) {
-        return map.has(key) ? map.set(key, map.get(key) + value) : map.set(key, value);
-    }
-
+    
     function makeTotal(totalsMap, key) {
         return totalsMap.has(key) ? totalsMap.get(key) : 0;
     }
