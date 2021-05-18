@@ -5,7 +5,7 @@ import makeSummarizeRequestBuilder from '../../main/core/summarize-questionnaire
 
 export default async function testSummarizeQuestionnaireResponses(test_counter = 0) {
     const dummyValues = makeDummyValues();
-    const stubs = makeGatewayStubs(dummyValues);
+    const stubs = makeInteractorStubs(dummyValues);
     const summarizeQuestionnaireResponses = makeSummarizeQuestionnaireResponses(stubs);
 
     await testNoFilterSummarize();
@@ -80,7 +80,7 @@ function makeDummyValues() {
     };
 }
 
-function makeGatewayStubs(dummyValues) {
+function makeInteractorStubs(dummyValues) {
     return {
         summarizeRequestValidator: { isValid: () => true },
         summarizeQuestionnaireResponsesGateway: {

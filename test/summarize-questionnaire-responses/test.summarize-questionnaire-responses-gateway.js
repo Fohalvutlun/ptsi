@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert';
 import { Sequelize } from 'sequelize';
 
-import makeSubmitQuestionnaireResponsesGateway from '../../main/plugins/sequelize/summarize-questionnaire-responses-gateway/summarize-questionnaire-responses-gateway.js';
+import makeSummarizeQuestionnaireResponsesGateway from '../../main/plugins/sequelize/summarize-questionnaire-responses-gateway/summarize-questionnaire-responses-gateway.js';
 import makeSequelizeModels from '../../main/plugins/sequelize/models/index.js';
 
 import makeFilterGatewayRequestBuilder from '../../main/core/summarize-questionnaire-responses/models/gateway-filter-request-model.js';
@@ -12,7 +12,7 @@ export default async function testSummarizeQuestionnaireResponsesGateway(test_co
     const models = makeSequelizeModels(sequelize);
     await sequelize.sync({ force: true });
 
-    const submitQuestionnaireResponseGateway = makeSubmitQuestionnaireResponsesGateway(models);
+    const summarizeQuestionnaireResponsesGateway = makeSummarizeQuestionnaireResponsesGateway(models);
     const dbRecords = await createDBRecords(models);
 
     await testCountQuestionnaireSubmissions();
@@ -25,14 +25,14 @@ export default async function testSummarizeQuestionnaireResponsesGateway(test_co
     return test_counter;
 
     async function testCountQuestionnaireSubmissions() {
-        const result = await submitQuestionnaireResponseGateway.countQuestionnaireSubmissions();
+        const result = await summarizeQuestionnaireResponsesGateway.countQuestionnaireSubmissions();
         assert.strictEqual(result, dbRecords.submission.length);
         test_counter++;
     }
 
     async function testCountSubmissionsForEachRiskLevelWithoutFilter() {
         const
-            result = await submitQuestionnaireResponseGateway.countSubmissionsForEachRiskLevel(),
+            result = await summarizeQuestionnaireResponsesGateway.countSubmissionsForEachRiskLevel(),
             expected = dbRecords.submission.reduce((acc, submission) => tallyValue(acc, submission.risk), new Map());
 
         assert.deepStrictEqual(result, expected);
@@ -59,10 +59,10 @@ export default async function testSummarizeQuestionnaireResponsesGateway(test_co
         async function testForFilter(date, age, gender, schoolGrouping) {
             const
                 filter = makeMockRequestModel(date, age, gender, schoolGrouping),
-                result = await submitQuestionnaireResponseGateway.countSubmissionsForEachRiskLevel(filter),
+                result = await summarizeQuestionnaireResponsesGateway.countSubmissionsForEachRiskLevel(filter),
                 expected = makeExpected(date, age, gender, schoolGrouping);
 
-            assert.deepStrictEqual(result, expected, `####### ${date}, ${age}, ${gender}, ${schoolGrouping}`);
+            assert.deepStrictEqual(result, expected);
         }
 
         function makeMockRequestModel(date, age, gender, schoolGrouping) {
@@ -119,7 +119,7 @@ export default async function testSummarizeQuestionnaireResponsesGateway(test_co
 
     async function testCountSubmissionsForEachGender() {
         const
-            result = await submitQuestionnaireResponseGateway.countSubmissionsForEachGender(),
+            result = await summarizeQuestionnaireResponsesGateway.countSubmissionsForEachGender(),
             expected = dbRecords.submission.reduce((acc, submission) => tallyValue(acc, getGender(submission)), new Map());
 
         assert.deepStrictEqual(result, expected);
@@ -132,7 +132,7 @@ export default async function testSummarizeQuestionnaireResponsesGateway(test_co
 
     async function testCountSubmissionsForEachAge() {
         const
-            result = await submitQuestionnaireResponseGateway.countSubmissionsForEachAge(),
+            result = await summarizeQuestionnaireResponsesGateway.countSubmissionsForEachAge(),
             expected = dbRecords.submission.reduce((acc, submission) => tallyValue(acc, getSubmissionAge(submission)), new Map());
 
         assert.deepStrictEqual(result, expected);
@@ -156,7 +156,7 @@ export default async function testSummarizeQuestionnaireResponsesGateway(test_co
 
         async function testQuestionCombination(questions) {
             const
-                result = await submitQuestionnaireResponseGateway.countAnswerChoiceForEachQuestion(questions),
+                result = await summarizeQuestionnaireResponsesGateway.countAnswerChoiceForEachQuestion(questions),
                 expected = questions.reduce((acc, question) =>
                     acc.set(question, dbRecords.questionnaireRespose.reduce((acc, record) =>
                         record[`questionNo${question}`] ? tallyValue(acc, record[`questionNo${question}`]) : acc,
