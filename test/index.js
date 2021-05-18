@@ -1,5 +1,6 @@
 import testSubmitQuestionnaireResponsesUC from './submit-questionnaire-responses/index.js';
 import testSummarizeQuestionnaireResponsesUC from './summarize-questionnaire-responses/index.js';
+import testSummarizeQuestionUC from './summarize-question/index.js';
 
 let test_counter = 0;
 const begin = new Date();
@@ -8,6 +9,7 @@ console.log(`[TEST - START] Started testing at ${begin.toISOString()}.`)
 
 test_counter = await testSubmitQuestionnaireResponsesUC(test_counter);
 test_counter = await testSummarizeQuestionnaireResponsesUC(test_counter);
+test_counter = await testSummarizeQuestionUC(test_counter);
 
 
 const end = new Date();
